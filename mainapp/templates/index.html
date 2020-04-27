@@ -1,0 +1,285 @@
+{% load static %}
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+
+<body>
+  <div class='colorbox'>
+    <div id="app">
+      <form action='vote/' method="post" enctype='application/json'>
+        {% csrf_token %}
+        <div class="form_div" id='intro'>
+          <h2>Wprowadzenie</h2>
+          <label for="imie">Podaj ulubione imię: <p class="error" v-if='nameIsValid === false'>Poprawnie napisz imię (np. Andrzej)</p></label><input required type="text" name='imie' v-model='imie' v-on:blur='validName'>
+          <br>
+          <label for="wiek">Wiek: </label><input required type="number" name="wiek" value="" min="10" max="100" v-model='wiek'><br>
+          <label for="plec">Płeć: </label> <input type="radio" name="kobieta" value="K" v-model='plec'><label for="plec">Kobieta</label><input type="radio" name="mezczyzna" value="M" v-model='plec'><label for="mezczyzna">Mężczyzna</label> <br>
+          <label for="kod">Kod pocztowy: <p class="error" v-if='kodIsValid === false'>Niepoprawny kod pocztowy</p></label><input required type="text" name="kod" value="" v-model='kod' @blur='validKod'>
+          <label for="student">Jestem studentem </label><input type="checkbox" name="student" value="False" v-model="student"> <br>
+        </div>
+        <div class="form_div" id='health'>
+          <h2>Stan zdrowia</h2>
+          <h3>Czy chorujesz na którąś z podanych chorób?</h3>
+          <ul class='a'>
+            <li v-for='item in baseData.choroby_table'>
+              <input type="checkbox" :id='item' :name='item' :value='item' v-model='choroby'><label for="item"><% item %></label><br>
+            </li>
+          </ul>
+          <h3>Które uzależnienia Cię dotyczą?</h3>
+          <ul>
+            <li v-for='item in baseData.uzaleznienia_table'>
+              <input type="checkbox" :id='item' :name='item' :value='item' v-model='uzaleznienia'><label :for="item"><% item %></label><br>
+            </li>
+          </ul>
+
+          <h3>Jak w swoim odczuciu radzisz sobie z sytuacjami stresowymi ? </h3>
+          <h3>(W skali od 1-5, gdzie 5 oznacza bardzo dobrze, 1 oznacza wcale)</h3>
+          <input type="range" id="stres" name="stres" min="1" max="5" step='1' v-model='stres'><label for="stres"><% stres %></label>
+        </div>
+        <div class="form_div" id='phone'>
+          <h2>Telefon</h2>
+          <label for="telefon">Mój telefon komórkowy to: </label> <br>
+          <input type="radio" name="smartfon" value="smartfon" v-model='telefon'><label for="smartfon">smartfon</label>
+          <input type="radio" name="klasyczny telefon" value="klasyczny" v-model='telefon'><label for="klasyczny telefon">klasyczny telefon</label>
+          <input type="radio" name="nie posiadam" value="brak" v-model='telefon'><label for="smartfon">nie posiadam</label>
+          <div v-if="telefon != 'brak'">
+            <h3>Wybierz zdanie, które najlepiej oddaje twoje przywiązanie telefonu.</h3>
+            <ul>
+              <li v-for='item in baseData.przywiazanie_table'>
+                <input type="radio" :id='item' :name='item' :value='item' v-model='przywiazanie'><label :for="item"><% item %></label><br>
+              </li>
+            </ul>
+          </div>
+          <div class="form_div" id='smartfon' v-if="telefon === 'smartfon'">
+            <label for="przekatna">Podaj przekatna ekranu w calach </label><input type="number" name="przekatna" value="" min="3" max="15" step=0.5 v-model='przekatna'>
+            <h3>Ile godzin dziennie korzystasz (aktywnie, np granie, przeglądanie stron internetowych) ze smartfona?</h3>
+            <input type="range" id="czas" name="czas" min="0" max="24" step='0.5' v-model='czas'><label for="czas"><% czas %></label>
+            <h3>Do czego najczęściej używasz smartfona?</h3>
+            <ul>
+              <li v-for='item in baseData.zwyczaje_table'>
+                <input type="radio" :id='item' :name='item' :value='item' v-model='najczesciej'><label :for="item"><% item %></label><br>
+              </li>
+            </ul>
+            <label for="czas">Ile czasu średnio na to poświęcasz? </label><input type="number" name="czas" value="" v-model='najczesciej_czas' min=0.5 :max=czas step=0.5>
+            <h3>Z jakiej półki cenowej jest Twój smartfon?</h3>
+            <ul>
+              <li v-for='item in baseData.cena_table'>
+                <input type="radio" :id='item' :name='item' :value='item' v-model='cena'><label :for="item"><% item %></label><br>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="from_div" id='illness'>
+          <h2>Choroby odsmartfonowe - smartfonilillis</h2>
+          <h3>W jakim stopniu rozprasza Cię brak smarfonu ? (gdzie 1 to bardzo , 5 to wcale)</h3>
+          <div class='options' v-for='item in baseData.od0do5'>
+            <input type="radio" :id='item' :name='item' :value='item' v-model='rozpraszanie'><label :for="item"><% item %></label>
+          </div>
+          <h3>Zaznacz stwierdzenia, które uważasz za prawdziwe.</h3>
+          <ul>
+            <li v-for='item in baseData.tru_false1'>
+              <input type="checkbox" :id='item[0]' :name='item[0]' :value='item[1]' v-model='prawdziwe1'><label :for="item[0]"><% item[0] %></label><br>
+            </li>
+          </ul>
+
+
+          <h3>Czy wiesz, co to jest współczynnik SAR?</h3>
+          <ul>
+            <li>
+              <input type="radio" id='r1' name='r1' value='1' v-model='odp_SAR'><label for="r1">współczynnik absorbcji swoistej</label>
+            </li>
+            <li><input type="radio" id='r2' name='r2' value='2' v-model='odp_SAR'><label for="r2">współczynnik absorbcji nieswoistej</label></li>
+            <li><input type="radio" id='r3' name='r3' value='3' v-model='odp_SAR'><label for="r3">współczynnik adsorbcji swoistej</label>
+            </li>
+            <li><input type="radio" id='r4' name='r4' value='4' v-model='odp_SAR'><label for="r4">współczynnik adsorpcji nieswoistej</label></li>
+          </ul>
+          <h3>Ryzyko jakich nowotworów może zwiększać użytkowanie smartfonów i telefonów?</h3>
+          <ul>
+            <li v-for='item in baseData.tru_false2'>
+              <input type="checkbox" :id='item[0]' :name='item[0]' :value='item[1]' v-model='prawdziwe2'><label :for="item[0]"><% item[0] %></label><br>
+            </li>
+          </ul>
+          <h3>Czy słyszałeś o nomofobii (strach przed zgubieniem smartfona) ?</h3>
+          <input type="radio" id='r21' name='r21' value='tak' v-model='odp_nomofobia'><label for="r21">Tak</label>
+          <input type="radio" id='r22' name='r22' value='nie' v-model='odp_nomofobia'><label for="r22">Nie</label><br>
+          <div v-if="odp_nomofobia === 'tak'">
+            <h3>Myślisz, że nomofobia może Ciebie dotyczyć ?</h3>
+            <input type="radio" id='r31' name='r31' value='tak' v-model='odp_nomofobia2'><label for="r31">Tak</label>
+            <input type="radio" id='r32' name='r32' value='nie' v-model='odp_nomofobia2'><label for="r32">Nie</label><br>
+          </div>
+
+        </div>
+        <input type="hidden" name="formData" :value="formData" />
+        <input type="submit" name="Zakończ" v-if='valid'>
+        <h1 v-else>Niektóre pola są błędnie wypełnione</h1>
+      </form>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      delimiters: ['<%', '%>'],
+      data: {
+        baseData: {
+          od0do5: [1, 2, 3, 4, 5],
+          choroby_table: [
+            'choroby układu krążenia',
+            'przewlekłe choroby układu oddechowego',
+            'cukrzyca',
+            'otyłość',
+            'nowotwory',
+            'osteoporoza',
+            'choroby autoimmunologiczne',
+            'padaczka',
+            'przewlekła choroba nerek',
+            'inne'
+          ],
+          uzaleznienia_table: [
+            'Alkohol',
+            'Wyroby tytoniowe',
+            'Hazard',
+            'Praca',
+            'Narkotyki',
+            'Leki',
+            'Internet',
+            'Gry komputerowe',
+            'Pornografia',
+            'Seks',
+            'Smartfon',
+            'Inne'
+          ],
+          przywiazanie_table: [
+            'rozstaję się z nim jedynie kiedy idę spać',
+            'spędzam z nim większość dnia jednak czasami gdzieś go zapodzieje',
+            'zazwyczaj mam go przy sobie chociaż czasami wychodzę z domu bez niego',
+            'używam sporadycznie, ale zawsze zabieram go ze sobą gdy wychodzę z domu',
+            'używam sporadycznie i zazwyczaj mam go przy sobie poza domem',
+            'używam sporadycznie i noszę go poza domem bardzo rzadko',
+            'leży w domu w szufladzie'
+          ],
+          zwyczaje_table: [
+            'Do słuchania muzyki',
+            'Do oglądania filmów',
+            'Do grania w gry',
+            'Do obserwacji mediów społecznościowych',
+            'Do nauki',
+            'Inne'
+          ],
+          cena_table: ['niska', 'średnia', 'wysoka'],
+          tru_false1: [
+            ['Korzystanie ze smartfona może powodować bezsenność.', 1],
+            ['Częste używanie telefonu trzymając go za blisko oczu może powodować wady wzroku.', 2],
+            ['Długotrwałe oglądanie filmów lub granie na smartfonie może powodować bóle i zawroty głowy', 3],
+            ['Korzystanie ze smartfonów we wczesnym dzieciństwie może zaburzać procesy dojrzewania.', -1],
+            ['Noszenie telefonu w przedniej kieszeni spodni może obniżać płodność u mężczyzn.', 4],
+            ['Osoby, w zależności od dominującej strony ciała, cierpią na choroby stawów przy nadmiernym korzystaniu ze smartfona.', -2],
+            ['Używanie telefonów emitujących duże ilości niebieskiego światła powoduje zmianę zabarwienia tęczówki na niebieską.', -3]
+          ],
+          tru_false2: [
+            ['Głowy', 1],
+            ['Szyi', 2],
+            ['Klatki piersiowej', -1],
+            ['Krwi', -2],
+            ['Szpiku kostnego', -3]
+          ],
+        },
+
+        imie: "",
+        wiek: 0,
+        plec: "none",
+        kod: "",
+        student: false,
+        nameIsValid: true,
+        choroby: [],
+        uzaleznienia: [],
+        stres: 0,
+        przywiazanie: "none",
+        telefon: "brak",
+        przekatna: 0,
+        kodIsValid: true,
+        czas: 0,
+        najczesciej: 'none',
+        najczesciej_czas: 0,
+        cena: "none",
+        rozpraszanie: 0,
+        prawdziwe1: [],
+        prawdziwe2: [],
+        odp_SAR: "none",
+        odp_nomofobia: "none",
+        odp_nomofobia2: "none",
+      },
+      computed: {
+        formData() {
+          var s1 = 0;
+          for (i in this.prawdziwe1) {
+            if (i > 0) s1++;
+            else s1--;
+          }
+          var s2 = 0;
+          for (i in this.prawdziwe2) {
+            if (i > 0) s2++;
+            else s2--;
+          }
+          var sar = 0;
+          if (this.odp_SAR == 1) sar = 1;
+
+          return JSON.stringify({
+            imie: this.imie,
+            wiek: this.wiek,
+            plec: this.plec,
+            kod: this.kod,
+            student: this.student,
+            choroby: this.choroby,
+            uzaleznienia: this.uzaleznienia,
+            stres: this.stres,
+            przywiazanie: this.przywiazanie,
+            telefon: this.telefon,
+            przekatna: this.przekatna,
+            czas: this.czas,
+            najczesciej: this.najczesciej,
+            najczesciej_czas: this.najczesciej_czas,
+            cena: this.cena,
+            rozpraszanie: this.rozpraszanie,
+            tru_false1: s1,
+            tru_false2: s2,
+            odp_SAR: sar,
+            odp_nomofobia: this.odp_nomofobia,
+            odp_nomofobia2: this.odp_nomofobia2,
+          })
+
+        },
+      },
+      methods: {
+        validName: function(event) {
+          if (event.target.value.match(/^[A-Z][^0-9]+$/)) {
+            this.nameIsValid = true;
+          } else {
+            this.nameIsValid = false;
+          }
+        },
+        validKod(event) {
+          if (event.target.value.match(/\d{2}-\d{3}/)) {
+            this.kodIsValid = true;
+          } else {
+            this.kodIsValid = false;
+          }
+        },
+
+        valid() {
+          return this.nameIsValid && this.kodIsValid
+        },
+
+      },
+
+    })
+
+  </script>
+</body>
+
+</html>
